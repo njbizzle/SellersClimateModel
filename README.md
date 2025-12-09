@@ -10,7 +10,7 @@ YouTube demonstration : (add this)
 2. Navigate to the file in your downloads folder (called NateMurphyASTR65_Final.dmg)
 3. Double click to open the DMG, a window with a app called **ASTR65_Final** will show up
 4. **Right click ASTR65_Final and press open**, don't just double click the app
-5. When the pop up shows up click OK to open the app
+5. When the pop up shows up click "Open"
 6. The window should show up in 5-15 seconds (it takes some time)
 
 ### Closing and Uninstalling
