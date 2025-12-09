@@ -1,6 +1,11 @@
 import sys
 import time
 import os
+
+# fix?
+if getattr(sys, 'frozen', False):
+    os.chdir(sys._MEIPASS)
+
 import csv
 import taichi as ti
 import taichi.math as tm
@@ -11,9 +16,7 @@ os.environ['TI_AOT_ONLY'] = '1'
 def resource_path(relative_path: str) -> Path:
     try:
         base_path = Path(sys._MEIPASS)
-        print("Yup")
     except Exception:
-        print("Nah")
         base_path = Path(__file__).parent
     return base_path / relative_path
 
@@ -85,7 +88,7 @@ class LatBelt:
     diff_ocean_cm2_s: ti.f32        # K_0 [cm^2/sec] (thermal ocean mixing)
 
 
-global belts, belts_n, display, avg_grad_t, avg_t, avg_albedo
+global belts, belts_n, display, avg_grad_t, avg_t, avg_albedo, solar_flux_mult
 
 def load_tables():
     def f(v: str):
@@ -222,7 +225,7 @@ def update_temps(b_in: ti.template(), b_out: ti.template()):
         
 
 @ti.func
-def calculate_transport(
+def calculate_heat_flux(
     belt: LatBelt,
     T_boundary: ti.f32, 
     del_T: ti.f32,
@@ -245,7 +248,7 @@ def calculate_transport(
     else:
         v = a_coeff * (del_T - avg_grad_global)
 
-    # using the Clausius-Clapeyron approximation for T_boundary
+    # using the clausius clapeyron approximation
     e_sat = 6.11 * tm.exp(5300.0 * (1.0/273.0 - 1.0/T_boundary)) * DYNES_PER_MB
     
     q = MOL_WEIGHT_RATIO * e_sat / REF_PRESSURE_DYNES
@@ -266,6 +269,8 @@ def calculate_transport(
 
 @ti.func
 def calculate_albedo(belt: LatBelt, temp_kelvin: ti.f32) -> float:
+    # return 0
+
     T_g = temp_kelvin - 0.0065 * belt.elevation_meters
     a_s: ti.f32 = 0.2
     if T_g <=  283.16:
@@ -278,7 +283,7 @@ def calculate_albedo(belt: LatBelt, temp_kelvin: ti.f32) -> float:
 
 @ti.func
 def calculate_radiation_balance(belt: LatBelt, temp_kelvin: ti.f32) -> ti.f32:
-    Q_s = belt.solar_flux_ly_sec
+    Q_s = belt.solar_flux_ly_sec * solar_flux_mult[None]
     a_s: ti.f32 = calculate_albedo(belt, temp_kelvin)
     attenuation_term = 1.9e-16 * tm.pow(temp_kelvin, 6)
     I_s = STEFAN_BOLTZMANN * temp_kelvin ** 4 * (
@@ -300,18 +305,18 @@ def solver_target(
 ) -> ti.f32:
     
     
-    P_in: ti.f32 = 0.0
-    P_out: ti.f32 = 0.0
+    F_in: ti.f32 = 0.0
+    F_out: ti.f32 = 0.0
     del_T: ti.f32 = 0.0
 
     if belt_i + 1 < N_BELTS:
         del_T = belt_north.temp_kelvin - T_0
         t_boundary = (T_0 + belt_north.temp_kelvin) * 0.5
-        P_in = calculate_transport(belt, t_boundary, del_T, avg_grad_T)
+        F_in = calculate_heat_flux(belt, t_boundary, del_T, avg_grad_T)
     if belt_i > 0:
         del_T = T_0 - belt_south.temp_kelvin
         t_boundary = (T_0 + belt_south.temp_kelvin) * 0.5
-        P_out = calculate_transport(belt, t_boundary, del_T, avg_grad_T)
+        F_out = calculate_heat_flux(belt, t_boundary, del_T, avg_grad_T)
 
     R_s = calculate_radiation_balance(belt, T_0)
 
@@ -324,11 +329,15 @@ def solver_target(
             "Estimate Zeros -- Lat: ", belt.lat_bottom_deg,
             " T_0: ", T_0,
             " R_s: ", R_s,
-            " P_in: ", P_in,
-            " P_out: ", P_out,
-            " Result: ", (R_s * area) - (P_out * l_north) + (P_in * l_south)
+            " F_in: ", F_in,
+            " F_out: ", F_out,
+            " Result: ", (R_s * area) + (F_in * l_south) - (F_out * l_north)
         )
-    return (R_s * area) - (P_out * l_north) + (P_in * l_south)
+
+    radiative_transport= R_s * area
+    belt_power_transport = (F_in * l_south) - (F_out * l_north)
+
+    return radiative_transport + belt_power_transport
 
 
 @ti.kernel
@@ -336,7 +345,7 @@ def render():
     for x, y in display:
         prog: ti.f32 = y / bounds[1] # never hits one
 
-        index: ti.u32 = ti.u32(prog * N_BELTS)
+        index: ti.i32 = ti.i32(prog * N_BELTS)
         temperature = belts[index].temp_kelvin
         albedo = belts[index].albedo
         a = 0.9
@@ -356,8 +365,8 @@ def update() -> None:
     render()
 
 def main() -> None:
-    global belts, belts_n, display, avg_grad_t, avg_t, avg_albedo
-    ti.init(arch=ti.gpu)
+    global belts, belts_n, display, avg_grad_t, avg_t, avg_albedo, solar_flux_mult
+    ti.init(arch=ti.metal)
 
     belts = LatBelt.field(shape=(N_BELTS,))
     belts_n = LatBelt.field(shape=(N_BELTS,))
@@ -365,55 +374,66 @@ def main() -> None:
     avg_grad_t = ti.field(dtype=ti.f32, shape=())
     avg_t = ti.field(dtype=ti.f32, shape=())
     avg_albedo = ti.field(dtype=ti.f32, shape=())
+    solar_flux_mult = ti.field(dtype=ti.f32, shape=())
 
     load_tables()
-    gui = ti.GUI(name="Hello World", res=bounds)
     setup()
+
+    window = ti.ui.Window("Climate Simulation", res=bounds)
+    canvas = window.get_canvas()
+    gui = window.get_gui()
 
     space_pressed = False
     paused = False
 
+    last_update = time.time()
+    update_time = 0.3
+    solar_flux_mult[None] = 1.0
+
     update()
-    while gui.running:
-        gui.get_event()  # must be called before is_pressed
-        if not gui.is_pressed(ti.GUI.SHIFT):
-            time.sleep(0.05)
 
-        if gui.is_pressed(ti.GUI.ESCAPE):
-            gui.running = False
+    while window.running:
         
-        if gui.is_pressed(ti.GUI.BACKSPACE):
-            setup()
-            update()
+        if window.is_pressed(ti.GUI.ESCAPE):
+            window.running = False
 
-        if gui.is_pressed(ti.GUI.SPACE) and not space_pressed:
+        if window.is_pressed(ti.GUI.SPACE) and not space_pressed:
             space_pressed = True
             paused = not paused
 
-        if not gui.is_pressed(ti.GUI.SPACE) and space_pressed:
+        if not window.is_pressed(ti.GUI.SPACE) and space_pressed:
             space_pressed = False
 
-        if not paused:
+        if not paused and ((time.time() - last_update) >= update_time or window.is_pressed(ti.GUI.SHIFT)):
             update()
+            last_update = time.time()
 
-        gui.set_image(display)
+        canvas.set_image(display)
 
-        gui.text(content=f"Avg Temp:      {avg_t[None]:.2f}", pos=(0,1), font_size=20, color=0x0)
-        gui.text(content=f"Avg Albedo:   {avg_albedo[None]:.4f}", pos=(0,0.97), font_size=20, color=0x0)
-        if paused:
-            gui.text(content="PAUSED", pos=(0.85,1), font_size=30, color=0xff0000)
+        with gui.sub_window("Simulation Control", x=0.01, y=0.01, width=0.3, height=0.35):
+            gui.text(f"Avg Temp:    {avg_t[None]:.2f}")
+            gui.text(f"Avg Albedo:  {avg_albedo[None]:.4f}")
+            
+            if paused:
+                gui.text("!!! PAUSED !!!", color=(1.0, 0.0, 0.0))
 
-        info_text = '''
-            press BACKSPACE to reset
-            press SPACE to pause/resume
-            press ESCAPE to quit
-            press SHIFT to speed up
-        '''
+            gui.text("Controls:")
+            
+            if gui.button("Pause/Resume (Space)"):
+                paused = not paused
+            
+            if gui.button("Reset"):
+                setup()
+                update()
+            
+            gui.text("Solar Flux Multiplier")
+            solar_flux_mult[None] = gui.slider_float("", solar_flux_mult[None], 0.0, 2.0)
+            gui.text("Update Time")
+            update_time = gui.slider_float(" ", update_time, 0.0, 0.5)
+            gui.text("Press ESC to quit")
 
-        for i, line in enumerate(info_text.strip().split('\n')):
-            gui.text(content=line.strip(), pos=(0,(i+1) * 0.03), font_size=20, color=0x0)
         
-        gui.show()
+        window.show()
 
 
 
