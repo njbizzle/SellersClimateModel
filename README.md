@@ -8,8 +8,8 @@ YouTube demonstration : (add this)
 ### [DOWNLOAD (MAC ONLY)](https://raw.githubusercontent.com/njbizzle/SellersClimateModel/main/NateMurphyASTR65_Final.dmg)
 1. Click download link above
 2. Navigate to the file in your downloads folder (called NateMurphyASTR65_Final.dmg)
-3. Double click to open the DMG, a window with a app called **ASTR65_Final** will show up
-4. **Right click ASTR65_Final and press open**, don't just double click the app
+3. Double click to open the DMG, a window with an app called **ASTR65_Final** will show up
+4. **Right click ASTR65_Final and press open**, don't just double click to open
 5. When the pop up shows up click "Open"
 6. The window should show up in 5-15 seconds (it takes some time)
 
