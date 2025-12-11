@@ -18,5 +18,5 @@ If step 4 didn't open the application try dragging **ASTR65_Final** to your Desk
 ### Uninstalling
 1. Close out of the climate simulation
 2. Nagivate to the window that opened in step 3
-3. Right click on an blank part of the window and select "Eject ..."
+3. Right click on a blank section of the window and select "Eject ..."
 4. Delete the original file NateMurphyASTR65_Final.dmg from your downloads folder
