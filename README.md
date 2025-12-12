@@ -6,15 +6,15 @@ Based off the paper *[A Global Climatic Model Based on the Energy Balance of the
 * Blue-white correlates with higher albedo
 
 ### YouTube Demonstration (Click image)
-[![](https://img.youtube.com/vi/WTtuEp58ymo/1.jpg)](https://youtu.be/WTtuEp58ymo)
-<br><br><br>
+[![](https://img.youtube.com/vi/WTtuEp58ymo/0.jpg)](https://youtu.be/WTtuEp58ymo)
+<br><br>
 
 ### [DOWNLOAD (MAC ONLY)](https://raw.githubusercontent.com/njbizzle/SellersClimateModel/main/NateMurphyASTR65_Final.dmg)
 1. Click download link above
 2. Navigate to the file in your downloads folder (called NateMurphyASTR65_Final.dmg)
 3. Double click to open the DMG, a window with an app called **ASTR65_Final** will show up
 4. **Right click ASTR65_Final and press open**, don't just double click to open
-5. When the pop up shows up click "Open" (If you still don't see the "Open" option read the bottom of this page {*})
+5. When the pop up shows up click "Open" (If you still don't see the option read the bottom of this page {*})
 6. The window should show up in 5-15 seconds (it takes some time)
 
 If step 4 didn't open the application try dragging **ASTR65_Final** to your Desktop or Downloads and then repeating the right click open process.
