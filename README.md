@@ -10,7 +10,7 @@ YouTube demonstration : (add this)
 2. Navigate to the file in your downloads folder (called NateMurphyASTR65_Final.dmg)
 3. Double click to open the DMG, a window with an app called **ASTR65_Final** will show up
 4. **Right click ASTR65_Final and press open**, don't just double click to open
-5. When the pop up shows up click "Open"
+5. When the pop up shows up click "Open" (If you still don't see the "Open" option read the bottom)
 6. The window should show up in 5-15 seconds (it takes some time)
 
 If step 4 didn't open the application try dragging **ASTR65_Final** to your Desktop or Downloads and then repeating the right click open process.
@@ -20,3 +20,8 @@ If step 4 didn't open the application try dragging **ASTR65_Final** to your Desk
 2. Nagivate to the window that opened in step 3
 3. Right click on a blank section of the window and select "Eject ..."
 4. Delete the original file NateMurphyASTR65_Final.dmg from your downloads folder
+
+
+If after following step 4 and 5 in the installation instructions you still don't see the "Open" option, it's possible that you're running a more recent version of MacOS that doesn't allow unverified software. There's no way. The way around this is more complicated, I'd recommend just watching the video. 
+
+However you can get around this by opening the terminal and running the command ```xattr -cr [path to the ASTR65_Final]```. This is easier if you drag and drop the ASTR65_Final app out of the dmg to a known location.
