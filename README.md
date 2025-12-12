@@ -2,8 +2,12 @@
 
 Based off the paper *[A Global Climatic Model Based on the Energy Balance of the Earth-Atmosphere System](https://journals.ametsoc.org/view/journals/apme/8/3/1520-0450_1969_008_0392_agcmbo_2_0_co_2.xml
 )* by William D. Sellers.
+* Deeper red correlates with higher tempuratures
+* Blue-white correlates with higher albedo
 
-YouTube demonstration : (add this)
+### YouTube Demonstration (Click image)
+[![](https://img.youtube.com/vi/WTtuEp58ymo/1.jpg)](https://www.youtube.com/watch?v=YQFC4AxMUEw)
+<br><br><br>
 
 ### [DOWNLOAD (MAC ONLY)](https://raw.githubusercontent.com/njbizzle/SellersClimateModel/main/NateMurphyASTR65_Final.dmg)
 1. Click download link above
