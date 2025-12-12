@@ -6,7 +6,7 @@ Based off the paper *[A Global Climatic Model Based on the Energy Balance of the
 * Blue-white correlates with higher albedo
 
 ### YouTube Demonstration (Click image)
-[![](https://img.youtube.com/vi/WTtuEp58ymo/1.jpg)](https://www.youtube.com/watch?v=YQFC4AxMUEw)
+[![](https://img.youtube.com/vi/WTtuEp58ymo/1.jpg)](https://youtu.be/WTtuEp58ymo)
 <br><br><br>
 
 ### [DOWNLOAD (MAC ONLY)](https://raw.githubusercontent.com/njbizzle/SellersClimateModel/main/NateMurphyASTR65_Final.dmg)
